@@ -29,6 +29,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 
+import com.wasteofplastic.askyblock.util.BigYamlConfiguration;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -227,7 +228,7 @@ public class CoopPlay {
      * Called when disabling the plugin
      */
     public void saveCoops() {
-        YamlConfiguration coopConfig = new YamlConfiguration();
+        YamlConfiguration coopConfig = new BigYamlConfiguration();
         for (UUID playerUUID : coopPlayers.keySet()) {
             coopConfig.set(playerUUID.toString(), getMyCoops(playerUUID));
         }
@@ -239,7 +240,7 @@ public class CoopPlay {
         if (!coopFile.exists()) {
             return;
         }
-        YamlConfiguration coopConfig = new YamlConfiguration();
+        YamlConfiguration coopConfig = new BigYamlConfiguration();
         try {
             coopConfig.load(coopFile);
         } catch (IOException | InvalidConfigurationException e) {

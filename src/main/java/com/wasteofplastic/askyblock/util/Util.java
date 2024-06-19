@@ -85,7 +85,7 @@ public final class Util {
             long watchdog = System.currentTimeMillis();
             while(midSave && System.currentTimeMillis() < watchdog + TIMEOUT ) {};
             try {
-                config = new YamlConfiguration();
+                config = new BigYamlConfiguration();
                 config.load(yamlFile);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -93,7 +93,7 @@ public final class Util {
             midLoad = false;
         } else {
             // Create the missing file
-            config = new YamlConfiguration();
+            config = new BigYamlConfiguration();
             if (!file.startsWith("players")) {
                 plugin.getLogger().info("No " + file + " found. Creating it...");
             }
@@ -101,7 +101,7 @@ public final class Util {
                 if (plugin.getResource(file) != null) {
                     plugin.getLogger().info("Using default found in jar file.");
                     plugin.saveResource(file, false);
-                    config = new YamlConfiguration();
+                    config = new BigYamlConfiguration();
                     config.load(yamlFile);
                 } else {
                     config.save(yamlFile);

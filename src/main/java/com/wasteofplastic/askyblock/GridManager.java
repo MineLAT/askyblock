@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
 
+import com.wasteofplastic.askyblock.util.BigYamlConfiguration;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
@@ -106,7 +107,7 @@ public class GridManager {
             plugin.getLogger().info(ISLANDS_FILENAME + " created.");
         } else {
             plugin.getLogger().info("Loading " + ISLANDS_FILENAME);
-            YamlConfiguration islandYaml = new YamlConfiguration();
+            YamlConfiguration islandYaml = new BigYamlConfiguration();
             try {
                 islandYaml.load(islandFile);
                 List<String> islandList = new ArrayList<>();
@@ -192,7 +193,7 @@ public class GridManager {
         // Read spawn file if it exists
         final File spawnFile = new File(plugin.getDataFolder(), "spawn.yml");
         if (spawnFile.exists()) {
-            YamlConfiguration spawn = new YamlConfiguration();
+            YamlConfiguration spawn = new BigYamlConfiguration();
             try {
                 spawn.load(spawnFile);
                 int range = spawn.getInt("spawn.range");
@@ -214,7 +215,7 @@ public class GridManager {
         // Go through player folder
         final File playerFolder = new File(plugin.getDataFolder() + File.separator + "players");
         final File quarantineFolder = new File(plugin.getDataFolder() + File.separator + "quarantine");
-        YamlConfiguration playerFile = new YamlConfiguration();
+        YamlConfiguration playerFile = new BigYamlConfiguration();
         int noisland = 0;
         int inTeam = 0;
         int count = 0;
@@ -448,7 +449,7 @@ public class GridManager {
      */
     public void saveGrid(boolean async) {
         //final File islandFile = new File(plugin.getDataFolder(), ISLANDS_FILENAME);
-        final YamlConfiguration islandYaml = new YamlConfiguration();
+        final YamlConfiguration islandYaml = new BigYamlConfiguration();
         // Save the settings config key
         List<String> islandSettings = new ArrayList<String>();
         for (SettingsFlag flag: SettingsFlag.values()) {

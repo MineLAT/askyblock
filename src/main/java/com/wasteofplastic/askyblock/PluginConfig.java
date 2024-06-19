@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
+import com.wasteofplastic.askyblock.util.BigYamlConfiguration;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -302,7 +303,7 @@ public class PluginConfig {
         // Check if the world name matches island.yml info
         File islandFile = new File(plugin.getDataFolder(), "islands.yml");
         if (islandFile.exists()) {
-            YamlConfiguration islandYaml = new YamlConfiguration();
+            YamlConfiguration islandYaml = new BigYamlConfiguration();
             try {
                 islandYaml.load(islandFile);
                 if (!islandYaml.contains(Settings.worldName)) {

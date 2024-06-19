@@ -39,6 +39,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
 
+import com.wasteofplastic.askyblock.util.BigYamlConfiguration;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -2166,7 +2167,7 @@ public class AdminCmd implements CommandExecutor, TabCompleter {
     private void purgePlayers(CommandSender sender) {
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             // This map is a list of owner and island level
-            YamlConfiguration player = new YamlConfiguration();
+            YamlConfiguration player = new BigYamlConfiguration();
             File oldPlayers = new File(plugin.getPlayersFolder(), "oldplayers");
             if (!oldPlayers.exists()) {
                 oldPlayers.mkdirs();
