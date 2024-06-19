@@ -176,8 +176,6 @@ public class NMSHandler implements NMSAbstraction {
                         type = PotionType.INSTANT_HEAL;
                     }else if(tag.equals("invisibility") || tag.equals("long_invisibility")){
                         type = PotionType.INVISIBILITY;
-                    }else if(tag.equals("leaping") || tag.equals("long_leaping") || tag.equals("strong_leaping")){
-                        type = PotionType.JUMP;
                     }else if(tag.equals("night_vision") || tag.equals("long_night_vision")){
                         type = PotionType.NIGHT_VISION;
                     }else if(tag.equals("poison") || tag.equals("long_poison") || tag.equals("strong_poison")){

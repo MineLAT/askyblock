@@ -1,0 +1,15 @@
+allprojects {
+    repositories {
+        maven { url 'https://repo.codemc.io/repository/nms/' }
+    }
+}
+
+subprojects {
+    dependencies {
+        compileOnly project(':nms')
+    }
+}
+
+dependencies {
+    compileOnly 'org.spigotmc:spigot-api:1.12.2-R0.1-SNAPSHOT'
+}
