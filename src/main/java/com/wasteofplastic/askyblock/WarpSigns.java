@@ -237,6 +237,7 @@ public class WarpSigns implements Listener {
                 e.printStackTrace();
             }
         }
+        plugin.getLogger().info("Loaded " + warpList.size() + " warps");
     }
 
     /**

@@ -138,6 +138,7 @@ public class GridManager {
                     }
                     // Load the islands
                     islandList = islandYaml.getStringList(Settings.worldName);
+                    int count = 0;
                     for (String island : islandList) {
                         Island newIsland = addIsland(island, settingsKey);
                         if (newIsland.getOwner() != null) {
@@ -146,7 +147,9 @@ public class GridManager {
                         if (newIsland.isSpawn()) {
                             spawn = newIsland;
                         }
+                        count++;
                     }
+                    plugin.getLogger().info("Loaded " + count + " islands with " + ownershipMap.size() + " owners");
                 } else {
                     plugin.getLogger().severe("Could not find any islands for this world. World name in config.yml is probably wrong.");
                     plugin.getLogger().severe("Making backup of " + ISLANDS_FILENAME + ". Correct world name and then replace " + ISLANDS_FILENAME);
