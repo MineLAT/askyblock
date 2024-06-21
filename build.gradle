@@ -83,5 +83,4 @@ jar {
 
 shadowJar {
     archiveClassifier.set('')
-    minimize()
 }
