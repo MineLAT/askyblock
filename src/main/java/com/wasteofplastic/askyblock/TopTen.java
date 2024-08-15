@@ -433,7 +433,11 @@ public class TopTen implements Listener, Requester {
             String playerName = getPlayer(event.getRawSlot());
             UUID uuid = plugin.getPlayers().getUUID(playerName);
             if (uuid != null && plugin.getWarpSignsListener().getWarp(uuid) != null) {
-                Util.runCommand(player, "is warp " + playerName);
+                if (player.hasPermission(Settings.PERMPREFIX + "mod.tp")) {
+                    Util.runCommand(player, "asadmin tp " + playerName);
+                } else {
+                    Util.runCommand(player, "is warp " + playerName);
+                }
             }
         }
         if (event.getSlotType().equals(SlotType.OUTSIDE)) {
