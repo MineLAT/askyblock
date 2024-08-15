@@ -742,6 +742,24 @@ public class IslandGuard implements Listener {
     }
 
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
+    public void onBlockPlace(final BlockPlaceEvent e) {
+        if (DEBUG) {
+            plugin.getLogger().info(e.getEventName());
+        }
+
+        if (Settings.allowedFakePlayers.contains(e.getPlayer().getName())) return;
+
+        if (inWorld(e.getPlayer())) {
+            if (actionAllowed(e.getPlayer(), e.getBlock().getLocation(), SettingsFlag.PLACE_BLOCKS)) {
+                return;
+            }
+            // Everyone else - not allowed
+            Util.sendMessage(e.getPlayer(), ChatColor.RED + plugin.myLocale(e.getPlayer().getUniqueId()).islandProtected);
+            e.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onItemFrameDamage(final EntityDamageByEntityEvent e) {
         // Check world
         if (!inWorld(e.getEntity()) || !(e.getEntity() instanceof ItemFrame)) {
