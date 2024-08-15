@@ -277,21 +277,23 @@ public final class Util {
     public static String prettifyText(String ugly) {
         if (!ugly.contains("_") && (!ugly.equals(ugly.toUpperCase())))
             return ugly;
-        String fin = "";
+        StringBuilder builder = new StringBuilder();
         ugly = ugly.toLowerCase();
         if (ugly.contains("_")) {
             String[] splt = ugly.split("_");
             int i = 0;
             for (String s : splt) {
                 i += 1;
-                fin += Character.toUpperCase(s.charAt(0)) + s.substring(1);
+                builder.append(Character.toUpperCase(s.charAt(0)));
+                builder.append(s.substring(1));
                 if (i < splt.length)
-                    fin += " ";
+                    builder.append(" ");
             }
         } else {
-            fin += Character.toUpperCase(ugly.charAt(0)) + ugly.substring(1);
+            builder.append(Character.toUpperCase(ugly.charAt(0)));
+            builder.append(ugly.substring(1));
         }
-        return fin;
+        return builder.toString();
     }
 
     /**
