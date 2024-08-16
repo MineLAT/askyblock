@@ -297,7 +297,7 @@ public class Island {
         // Bukkit.getLogger().info("DEBUG: adding serialized island to grid ");
         // Deserialize
         // Format:
-        // x:height:z:protection range:island distance:owner UUID: locked: protected
+        // x:height:z:protection range:island distance:owner UUID:locked:protected:flags:biome:levelHandicap
         String[] split = serial.split(":");
         try {
             protectionRange = Integer.parseInt(split[3]);

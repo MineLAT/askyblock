@@ -628,6 +628,9 @@ general:
    # be a little spammy.
    # Recommendation is to keep this false.
    islandtopteninchat: false
+
+   # Minimum time to consider an island has inactive to ignore it on top ten
+   topteninactive: 180 DAYS
    
    # Toggle Magic Cobblestone Generator
    # If set to true, a cobble generator will not just generate cobblestone, but

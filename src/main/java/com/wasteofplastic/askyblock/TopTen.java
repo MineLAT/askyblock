@@ -18,6 +18,8 @@
 package com.wasteofplastic.askyblock;
 
 import java.io.File;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,6 +35,7 @@ import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -101,12 +104,21 @@ public class TopTen implements Listener, Requester {
             return;
         }
         // Try and see if the player is online
-        Player player = plugin.getServer().getPlayer(ownerUUID);
+        OfflinePlayer player = Bukkit.getOfflinePlayer(ownerUUID);
         if (player != null) {
             // Online
-            if (!player.hasPermission(Settings.PERMPREFIX + "intopten")) {
-                topTenList.remove(ownerUUID);
-                return;
+            if (player.isOnline()) {
+                if (!player.getPlayer().hasPermission(Settings.PERMPREFIX + "intopten")) {
+                    topTenList.remove(ownerUUID);
+                    return;
+                }
+            } else if (Settings.topTenInactiveTime > 0) {
+                // Inactive
+                final long time = System.currentTimeMillis() - player.getLastPlayed();
+                if (time >= Settings.topTenInactiveTime) {
+                    topTenList.remove(ownerUUID);
+                    return;
+                }
             }
         }
         topTenList.put(ownerUUID, l);

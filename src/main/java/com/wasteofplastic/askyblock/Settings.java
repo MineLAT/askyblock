@@ -193,6 +193,9 @@ public class Settings {
     // Use old display (chat instead of GUI) for Island top ten
     public static boolean displayIslandTopTenInChat;
 
+    // Minimum time to consider an island has inactive
+    public static long topTenInactiveTime;
+
     // Need a certain amount of island levels to create a warp sign
     public static int warpLevelsRestriction;
 

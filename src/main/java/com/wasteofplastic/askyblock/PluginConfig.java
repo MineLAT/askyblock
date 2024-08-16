@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
 
 import com.wasteofplastic.askyblock.util.BigYamlConfiguration;
 import org.apache.commons.lang.StringUtils;
@@ -695,6 +696,20 @@ public class PluginConfig {
 
         // Use old display (chat instead of GUI) for Island top ten
         Settings.displayIslandTopTenInChat = plugin.getConfig().getBoolean("general.islandtopteninchat", false);
+
+        // Minimum time to consider an island has inactive
+        final String topTenInactive = plugin.getConfig().getString("general.topteninactive");
+        if (topTenInactive == null || !topTenInactive.contains(" ")) {
+            Settings.topTenInactiveTime = -1;
+        } else {
+            final String[] split = topTenInactive.split(" ");
+            try {
+                Settings.topTenInactiveTime = TimeUnit.valueOf(split[1].toUpperCase()).toMillis(Long.parseLong(split[0]));
+            } catch (Exception e) {
+                e.printStackTrace();
+                Settings.topTenInactiveTime = -1;
+            }
+        }
 
         // Magic Cobble Generator
         Settings.useMagicCobbleGen = plugin.getConfig().getBoolean("general.usemagiccobblegen", false);
