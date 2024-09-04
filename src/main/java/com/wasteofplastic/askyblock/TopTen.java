@@ -44,6 +44,7 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType.SlotType;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -340,7 +341,7 @@ public class TopTen implements Listener, Requester {
             if (gui == null) {
                 // Must be a multiple of 9
                 int GUISIZE = 27;
-                gui = Bukkit.createInventory(null, GUISIZE, plugin.myLocale(player.getUniqueId()).topTenGuiTitle);
+                gui = new Gui(GUISIZE, plugin.myLocale(player.getUniqueId()).topTenGuiTitle).getInventory();
                 if (DEBUG)
                     plugin.getLogger().info("DEBUG: creating GUI for the first time");
             }
@@ -427,17 +428,15 @@ public class TopTen implements Listener, Requester {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
     public void onInventoryClick(InventoryClickEvent event) {
         Inventory inventory = event.getInventory(); // The inventory that was clicked in
-        if (inventory.getName() == null) {
-            return;
-        }
-        // The player that clicked the item
-        Player player = (Player) event.getWhoClicked();
-        if (!inventory.getTitle().equals(plugin.myLocale().topTenGuiTitle)) {
+        if (!(inventory.getHolder() instanceof Gui)) {
             return;
         }
         event.setCancelled(true);
+
+        // The player that clicked the item
+        Player player = (Player) event.getWhoClicked();
         player.updateInventory();
-        if(event.getCurrentItem() != null && !event.getCurrentItem().getType().equals(Material.AIR) && event.getRawSlot() < 26) {
+        if (event.getCurrentItem() != null && !event.getCurrentItem().getType().equals(Material.AIR) && event.getRawSlot() < 26) {
             event.getCurrentItem().setType(Material.AIR);
             player.closeInventory();
             String playerName = getPlayer(event.getRawSlot());
@@ -501,5 +500,19 @@ public class TopTen implements Listener, Requester {
     public void setHead(HeadInfo headInfo) {
         topTenHeads.put(headInfo.getUuid(), headInfo.getHead());
 
+    }
+
+    private static class Gui implements InventoryHolder {
+
+        private final Inventory inventory;
+
+        public Gui(int size, String title) {
+            this.inventory = Bukkit.createInventory(this, size, title);
+        }
+
+        @Override
+        public Inventory getInventory() {
+            return inventory;
+        }
     }
 }

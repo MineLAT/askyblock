@@ -518,8 +518,8 @@ teamchat:
 topTen:
   errorExcluded: "Estas excluido del top ten porque no tienes [perm]"
   errorNotReady: "Top 10 de islas no generado aun!"
-  guiHeading: "&E&L<!> Island: &6&N[name]&7 (#[rank])"
-  guiTitle: "Top 10 Islands"
+  guiHeading: "&E&L<!> Isla: &6&N[name]&7 (#[rank])"
+  guiTitle: "Top 10 Islas"
   header: "Este es el top 10 de islas:"
 visitors:
   protected: "Visitors protected"
