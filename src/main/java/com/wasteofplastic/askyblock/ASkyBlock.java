@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import com.wasteofplastic.askyblock.listeners.PermissionEvents;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
@@ -761,6 +762,12 @@ public class ASkyBlock extends JavaPlugin {
         if (Settings.recoverSuperFlat) {
             manager.registerEvents(new CleanSuperFlat(), this);
         }
+        // Permissions
+        Bukkit.getScheduler().runTaskLater(this, () -> {
+            if (Bukkit.getPluginManager().isPluginEnabled("LuckPerms")) {
+                new PermissionEvents();
+            }
+        }, 2400L);
     }
 
 
