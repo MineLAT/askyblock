@@ -78,6 +78,9 @@ public class PluginConfig {
             Settings.islandProtectionRange--;
             plugin.getLogger().warning("Protection range must be even, using " + Settings.islandProtectionRange);
         }
+
+        Settings.islandChunkOutline = plugin.getConfig().getInt("island.chunkOutline", 1);
+
         // xoffset and zoffset are not public and only used for IslandWorld compatibility
         Settings.islandXOffset = plugin.getConfig().getInt("island.xoffset", 0);
         if (Settings.islandXOffset < 0) {

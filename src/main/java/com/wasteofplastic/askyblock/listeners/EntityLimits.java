@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.BlockState;
@@ -194,32 +195,30 @@ public class EntityLimits implements Listener {
         List<Player> culprits = new ArrayList<Player>();
         boolean overLimit = false;
         int animals = 0;
-        for (int x = island.getMinProtectedX() /16; x <= (island.getMinProtectedX() + island.getProtectionSize() - 1)/16; x++) {
-            for (int z = island.getMinProtectedZ() /16; z <= (island.getMinProtectedZ() + island.getProtectionSize() - 1)/16; z++) {
-                for (Entity entity : ASkyBlock.getIslandWorld().getChunkAt(x, z).getEntities()) {
-                    if (entity instanceof Animals || entity.getType().equals(EntityType.SQUID)) {
+        for (Chunk chunk : island.getProtectionChunks(ASkyBlock.getIslandWorld())) {
+            for (Entity entity : chunk.getEntities()) {
+                if (entity instanceof Animals || entity.getType().equals(EntityType.SQUID)) {
+                    if (DEBUG2)
+                        plugin.getLogger().info("DEBUG: Animal count is " + animals);
+                    animals++;
+                    if (animals >= Settings.breedingLimit) {
+                        // Delete any extra animals
+                        overLimit = true;
+                        animal.remove();
                         if (DEBUG2)
-                            plugin.getLogger().info("DEBUG: Animal count is " + animals);
-                        animals++;
-                        if (animals >= Settings.breedingLimit) {
-                            // Delete any extra animals
-                            overLimit = true;
-                            animal.remove();
-                            if (DEBUG2)
-                                plugin.getLogger().info("Over limit! >=" + Settings.breedingLimit);
-                            e.setCancelled(true);
-                        }
-                    } else if (entity instanceof Player && e.getSpawnReason() != SpawnReason.SPAWNER && e.getSpawnReason() != SpawnReason.DISPENSE_EGG) {
-                        for (ItemStack itemInHand: Util.getPlayerInHandItems((Player) entity)) {
-                            if (itemInHand != null) {
-                                Material type = itemInHand.getType();
-                                if (type == Material.EGG || type == Material.MONSTER_EGG || type == Material.WHEAT || type == Material.CARROT_ITEM
-                                        || type == Material.SEEDS) {
-                                    if (DEBUG2)
-                                        plugin.getLogger().info("Player used egg or did breeding ");
-                                    if (!culprits.contains((Player)entity)) {
-                                        culprits.add(((Player) entity));
-                                    }
+                            plugin.getLogger().info("Over limit! >=" + Settings.breedingLimit);
+                        e.setCancelled(true);
+                    }
+                } else if (entity instanceof Player && e.getSpawnReason() != SpawnReason.SPAWNER && e.getSpawnReason() != SpawnReason.DISPENSE_EGG) {
+                    for (ItemStack itemInHand: Util.getPlayerInHandItems((Player) entity)) {
+                        if (itemInHand != null) {
+                            Material type = itemInHand.getType();
+                            if (type == Material.EGG || type == Material.MONSTER_EGG || type == Material.WHEAT || type == Material.CARROT_ITEM
+                                    || type == Material.SEEDS) {
+                                if (DEBUG2)
+                                    plugin.getLogger().info("Player used egg or did breeding ");
+                                if (!culprits.contains((Player)entity)) {
+                                    culprits.add(((Player) entity));
                                 }
                             }
                         }
@@ -231,29 +230,27 @@ public class EntityLimits implements Listener {
             plugin.getLogger().info("Counting nether");
         // Nether check
         if (Settings.createNether && Settings.newNether && ASkyBlock.getNetherWorld() != null) {
-            for (int x = island.getMinProtectedX() /16; x <= (island.getMinProtectedX() + island.getProtectionSize() - 1)/16; x++) {
-                for (int z = island.getMinProtectedZ() /16; z <= (island.getMinProtectedZ() + island.getProtectionSize() - 1)/16; z++) {
-                    for (Entity entity : ASkyBlock.getNetherWorld().getChunkAt(x, z).getEntities()) {
-                        if (entity instanceof Animals || entity.getType().equals(EntityType.SQUID)) {
+            for (Chunk chunk : island.getProtectionChunks(ASkyBlock.getNetherWorld())) {
+                for (Entity entity : chunk.getEntities()) {
+                    if (entity instanceof Animals || entity.getType().equals(EntityType.SQUID)) {
+                        if (DEBUG2)
+                            plugin.getLogger().info("DEBUG: Animal count is " + animals);
+                        animals++;
+                        if (animals >= Settings.breedingLimit) {
+                            // Delete any extra animals
                             if (DEBUG2)
-                                plugin.getLogger().info("DEBUG: Animal count is " + animals);
-                            animals++;
-                            if (animals >= Settings.breedingLimit) {
-                                // Delete any extra animals
-                                if (DEBUG2)
-                                    plugin.getLogger().info("Over limit! >=" + Settings.breedingLimit);
-                                overLimit = true;
-                                animal.remove();
-                                e.setCancelled(true);
-                            }
-                        } else if (entity instanceof Player && e.getSpawnReason() != SpawnReason.SPAWNER && e.getSpawnReason() != SpawnReason.DISPENSE_EGG) {
-                            for (ItemStack itemInHand : Util.getPlayerInHandItems(((Player) entity))) {
-                                Material type = itemInHand.getType();
-                                if (type == Material.EGG || type == Material.MONSTER_EGG || type == Material.WHEAT || type == Material.CARROT_ITEM
-                                        || type == Material.SEEDS) {
-                                    if (!culprits.contains((Player)entity)) {
-                                        culprits.add(((Player) entity));
-                                    }
+                                plugin.getLogger().info("Over limit! >=" + Settings.breedingLimit);
+                            overLimit = true;
+                            animal.remove();
+                            e.setCancelled(true);
+                        }
+                    } else if (entity instanceof Player && e.getSpawnReason() != SpawnReason.SPAWNER && e.getSpawnReason() != SpawnReason.DISPENSE_EGG) {
+                        for (ItemStack itemInHand : Util.getPlayerInHandItems(((Player) entity))) {
+                            Material type = itemInHand.getType();
+                            if (type == Material.EGG || type == Material.MONSTER_EGG || type == Material.WHEAT || type == Material.CARROT_ITEM
+                                    || type == Material.SEEDS) {
+                                if (!culprits.contains((Player)entity)) {
+                                    culprits.add(((Player) entity));
                                 }
                             }
                         }

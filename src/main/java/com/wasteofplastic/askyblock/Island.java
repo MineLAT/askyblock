@@ -20,10 +20,12 @@ package com.wasteofplastic.askyblock;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -36,6 +38,7 @@ import org.bukkit.entity.Villager;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import com.wasteofplastic.askyblock.util.Util;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Stores all the info about an island
@@ -589,6 +592,19 @@ public class Island {
 
     }
 
+    public Iterable<Chunk> getProtectionChunks() {
+        return getProtectionChunks(world);
+    }
+
+    public Iterable<Chunk> getProtectionChunks(World world) {
+        return new Iterable<>() {
+            @Override
+            public @NotNull Iterator<Chunk> iterator() {
+                return Island.this.chunkIterator(world);
+            }
+        };
+    }
+
     /**
      * @return the islandDistance
      */
@@ -842,12 +858,10 @@ public class Island {
      */
     public int getPopulation() {
         int result = 0;
-        for (int x = getMinProtectedX() /16; x <= (getMinProtectedX() + getProtectionSize() - 1)/16; x++) {
-            for (int z = getMinProtectedZ() /16; z <= (getMinProtectedZ() + getProtectionSize() - 1)/16; z++) {
-                for (Entity entity : world.getChunkAt(x, z).getEntities()) {
-                    if (entity instanceof Villager && onIsland(entity.getLocation())) {
-                        result++;
-                    }
+        for (Chunk chunk : getProtectionChunks()) {
+            for (Entity entity : chunk.getEntities()) {
+                if (entity instanceof Villager && onIsland(entity.getLocation())) {
+                    result++;
                 }
             }
         }
@@ -860,12 +874,10 @@ public class Island {
     public int getHopperCount() {
         tileEntityCount.clear();
         int result = 0;
-        for (int x = getMinProtectedX() /16; x <= (getMinProtectedX() + getProtectionSize() - 1)/16; x++) {
-            for (int z = getMinProtectedZ() /16; z <= (getMinProtectedZ() + getProtectionSize() - 1)/16; z++) {
-                for (BlockState holder : world.getChunkAt(x, z).getTileEntities()) {
-                    if (holder instanceof Hopper && onIsland(holder.getLocation())) {
-                        result++;
-                    }
+        for (Chunk chunk : getProtectionChunks()) {
+            for (BlockState holder : chunk.getTileEntities()) {
+                if (holder instanceof Hopper && onIsland(holder.getLocation())) {
+                    result++;
                 }
             }
         }
@@ -880,37 +892,35 @@ public class Island {
      */
     public int getTileEntityCount(Material material, World world) {
         int result = 0;
-        for (int x = getMinProtectedX() /16; x <= (getMinProtectedX() + getProtectionSize() - 1)/16; x++) {
-            for (int z = getMinProtectedZ() /16; z <= (getMinProtectedZ() + getProtectionSize() - 1)/16; z++) {
-                for (BlockState holder : world.getChunkAt(x, z).getTileEntities()) {
-                    //plugin.getLogger().info("DEBUG: tile entity: " + holder.getType());
-                    if (onIsland(holder.getLocation())) {
-                        if (holder.getType() == material) {
+        for (Chunk chunk : getProtectionChunks(world)) {
+            for (BlockState holder : chunk.getTileEntities()) {
+                //plugin.getLogger().info("DEBUG: tile entity: " + holder.getType());
+                if (onIsland(holder.getLocation())) {
+                    if (holder.getType() == material) {
+                        result++;
+                    } else if (material.equals(Material.REDSTONE_COMPARATOR_OFF)) {
+                        if (holder.getType().equals(Material.REDSTONE_COMPARATOR_ON)) {
                             result++;
-                        } else if (material.equals(Material.REDSTONE_COMPARATOR_OFF)) {
-                            if (holder.getType().equals(Material.REDSTONE_COMPARATOR_ON)) {
-                                result++;
-                            }
-                        } else if (material.equals(Material.FURNACE)) {
-                            if (holder.getType().equals(Material.BURNING_FURNACE)) {
-                                result++;
-                            }
-                        } else if (material.toString().endsWith("BANNER")) {
-                            if (holder.getType().toString().endsWith("BANNER")) {
-                                result++;
-                            }
-                        } else if (material.equals(Material.WALL_SIGN) || material.equals(Material.SIGN_POST)) {
-                            if (holder.getType().equals(Material.WALL_SIGN) || holder.getType().equals(Material.SIGN_POST)) {
-                                result++;
-                            }
+                        }
+                    } else if (material.equals(Material.FURNACE)) {
+                        if (holder.getType().equals(Material.BURNING_FURNACE)) {
+                            result++;
+                        }
+                    } else if (material.toString().endsWith("BANNER")) {
+                        if (holder.getType().toString().endsWith("BANNER")) {
+                            result++;
+                        }
+                    } else if (material.equals(Material.WALL_SIGN) || material.equals(Material.SIGN_POST)) {
+                        if (holder.getType().equals(Material.WALL_SIGN) || holder.getType().equals(Material.SIGN_POST)) {
+                            result++;
                         }
                     }
                 }
-                for (Entity holder : world.getChunkAt(x, z).getEntities()) {
-                    //plugin.getLogger().info("DEBUG: entity: " + holder.getType());
-                    if (holder.getType().toString().equals(material.toString()) && onIsland(holder.getLocation())) {
-                        result++;
-                    }
+            }
+            for (Entity holder : chunk.getEntities()) {
+                //plugin.getLogger().info("DEBUG: entity: " + holder.getType());
+                if (holder.getType().toString().equals(material.toString()) && onIsland(holder.getLocation())) {
+                    result++;
                 }
             }
         }
@@ -1007,4 +1017,33 @@ public class Island {
 
     }
 
+    @NotNull
+    protected Iterator<Chunk> chunkIterator(World world) {
+        return new Iterator<>() {
+            private final int minX = (getMinProtectedX() >> 4) - Settings.islandChunkOutline;
+            private final int maxX = ((getMinProtectedX() + getProtectionSize() - 1) >> 4) + Settings.islandChunkOutline;
+            private final int minZ = (getMinProtectedZ() >> 4) - Settings.islandChunkOutline;
+            private final int maxZ = ((getMinProtectedZ() + getProtectionSize() - 1) >> 4) + Settings.islandChunkOutline;
+
+            private int currentX = minX;
+            private int currentZ = minZ;
+
+            @Override
+            public boolean hasNext() {
+                return currentX <= maxX && currentZ <= maxZ;
+            }
+
+            @Override
+            public Chunk next() {
+                if (currentZ >= maxZ) {
+                    currentZ = minZ;
+                    currentX++;
+                } else {
+                    currentZ++;
+                }
+
+                return world.getChunkAt(currentX, currentZ);
+            }
+        };
+    }
 }

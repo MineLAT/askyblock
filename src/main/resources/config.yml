@@ -32,6 +32,9 @@ island:
    # For optimal performance, keep protection range at leat 16 blocks less than distance.
    protectionRange: 100
 
+   # Add chunk outline to protection calculations
+   chunkOutline: 1
+
    # Start islands at these coordinates. This is where new islands will start in the
    # world. These must be a factor of your island distance, but the plugin will auto
    # calculate the closest location on the grid. Islands develop around this location

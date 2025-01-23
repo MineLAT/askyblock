@@ -122,6 +122,7 @@ public class Settings {
     public static int islandZOffset;
     public static int seaHeight;
     public static int islandProtectionRange;
+    public static int islandChunkOutline;
     public static int abandonedIslandLevel;
     public static Double startingMoney;
     public static double netherSpawnRadius;
