@@ -1738,6 +1738,29 @@ public class AdminCmd implements CommandExecutor, TabCompleter {
                     showInfo(playerUUID, sender);
                     return true;
                 }
+            } else if (split[0].equalsIgnoreCase("tiles")) {
+                // Find the closest island
+                if (!(sender instanceof Player)) {
+                    Util.sendMessage(sender, ChatColor.RED + plugin.myLocale().errorUseInGame);
+                    return true;
+                }
+                final Material material = Material.getMaterial(split[1]);
+                if (material == null) {
+                    Util.sendMessage(sender, ChatColor.RED + "The material " + split[1] + " does not exist");
+                    return true;
+                }
+                Location closestIsland = getClosestIsland(((Player) sender).getLocation());
+                if (closestIsland == null) {
+                    Util.sendMessage(sender, ChatColor.RED + "Sorry, could not find an island. Move closer?");
+                    return true;
+                }
+                Island island = plugin.getGrid().getIslandAt(closestIsland);
+                if (island == null) {
+                    plugin.getLogger().info("Get island at was null" + closestIsland);
+                    return true;
+                }
+                island.sendTileEntityCount((Player) sender, material);
+                return true;
             } else if (split[0].equalsIgnoreCase("resetallchallenges")) {
                 // Convert name to a UUID
                 final UUID playerUUID = plugin.getPlayers().getUUID(split[1], true);
@@ -2632,7 +2655,7 @@ public class AdminCmd implements CommandExecutor, TabCompleter {
                         "clearreset", "clearresetall", "setbiome", "topbreeders", "team",
                         "name", "setdeaths", "settingsreset", "setrange", "addrange",
                         "resetname", "register", "cobblestats", "clearchallengereset",
-                        "setlanguage"));
+                        "setlanguage", "tiles"));
                 break;
             case 2:
                 if (args[0].equalsIgnoreCase("setlanguage")) {

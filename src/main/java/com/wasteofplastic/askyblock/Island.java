@@ -24,7 +24,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -33,6 +36,7 @@ import org.bukkit.block.Biome;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Hopper;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 
 import com.google.common.collect.HashMultiset;
@@ -931,6 +935,49 @@ public class Island {
             result--;
         }
         return result;
+    }
+
+    public void sendTileEntityCount(Player player, Material material) {
+        final List<Location> locations = new ArrayList<>();
+        for (Chunk chunk : getProtectionChunks(player.getWorld())) {
+            for (BlockState holder : chunk.getTileEntities()) {
+                if (onIsland(holder.getLocation())) {
+                    if (holder.getType() == material) {
+                        locations.add(holder.getLocation());
+                    } else if (material.equals(Material.REDSTONE_COMPARATOR_OFF)) {
+                        if (holder.getType().equals(Material.REDSTONE_COMPARATOR_ON)) {
+                            locations.add(holder.getLocation());
+                        }
+                    } else if (material.equals(Material.FURNACE)) {
+                        if (holder.getType().equals(Material.BURNING_FURNACE)) {
+                            locations.add(holder.getLocation());
+                        }
+                    } else if (material.toString().endsWith("BANNER")) {
+                        if (holder.getType().toString().endsWith("BANNER")) {
+                            locations.add(holder.getLocation());
+                        }
+                    } else if (material.equals(Material.WALL_SIGN) || material.equals(Material.SIGN_POST)) {
+                        if (holder.getType().equals(Material.WALL_SIGN) || holder.getType().equals(Material.SIGN_POST)) {
+                            locations.add(holder.getLocation());
+                        }
+                    }
+                }
+            }
+            for (Entity holder : chunk.getEntities()) {
+                if (holder.getType().toString().equals(material.toString()) && onIsland(holder.getLocation())) {
+                    locations.add(holder.getLocation());
+                }
+            }
+        }
+
+        player.sendMessage(ChatColor.YELLOW + "Locations of " + material.name() + ": " + ChatColor.WHITE + getTileEntityCount(material, player.getWorld()));
+        for (int i = 0; i < locations.size(); i++) {
+            final Location location = locations.get(i);
+            final String formatted = location.getX() + " " + location.getY() + " " + location.getZ();
+            final ComponentBuilder builder = new ComponentBuilder(ChatColor.GOLD + String.valueOf(i) + "- " + ChatColor.WHITE + formatted);
+            builder.event(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/tp " + formatted));
+            player.spigot().sendMessage(builder.create());
+        }
     }
 
     public void setSpawnPoint(Location location) {
