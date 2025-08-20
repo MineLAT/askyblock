@@ -860,7 +860,7 @@ public class Island {
         int result = 0;
         for (Chunk chunk : getProtectionChunks()) {
             for (Entity entity : chunk.getEntities()) {
-                if (entity instanceof Villager && onIsland(entity.getLocation())) {
+                if (entity.isValid() && entity instanceof Villager && onIsland(entity.getLocation())) {
                     result++;
                 }
             }
