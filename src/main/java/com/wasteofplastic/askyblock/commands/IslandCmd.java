@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
 
+import com.earth2me.essentials.spawn.IEssentialsSpawn;
 import com.wasteofplastic.askyblock.events.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
@@ -1984,8 +1985,13 @@ public class IslandCmd implements CommandExecutor, TabCompleter {
                             }
                             // Clear all player variables and save
                             plugin.resetPlayer(player);
-                            if (!player.performCommand(Settings.SPAWNCOMMAND)) {
-                                player.teleport(player.getWorld().getSpawnLocation());
+                            if (Bukkit.getPluginManager().isPluginEnabled("EssentialsSpawn")) {
+                                final IEssentialsSpawn essentials = (IEssentialsSpawn) Bukkit.getPluginManager().getPlugin("EssentialsSpawn");
+                                player.teleport(essentials.getSpawn("default"));
+                            } else {
+                                if (!player.performCommand(Settings.SPAWNCOMMAND)) {
+                                    player.teleport(player.getWorld().getSpawnLocation());
+                                }
                             }
                             return true;
                         } else {
