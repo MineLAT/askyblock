@@ -1761,6 +1761,29 @@ public class AdminCmd implements CommandExecutor, TabCompleter {
                 }
                 island.sendTileEntityCount((Player) sender, material);
                 return true;
+            } else if (split[0].equalsIgnoreCase("entities")) {
+                // Find the closest island
+                if (!(sender instanceof Player)) {
+                    Util.sendMessage(sender, ChatColor.RED + plugin.myLocale().errorUseInGame);
+                    return true;
+                }
+                final EntityType type = EntityType.fromName(split[1]);
+                if (type == null) {
+                    Util.sendMessage(sender, ChatColor.RED + "The entity type " + split[1] + " does not exist");
+                    return true;
+                }
+                Location closestIsland = getClosestIsland(((Player) sender).getLocation());
+                if (closestIsland == null) {
+                    Util.sendMessage(sender, ChatColor.RED + "Sorry, could not find an island. Move closer?");
+                    return true;
+                }
+                Island island = plugin.getGrid().getIslandAt(closestIsland);
+                if (island == null) {
+                    plugin.getLogger().info("Get island at was null" + closestIsland);
+                    return true;
+                }
+                island.sendPopulation((Player) sender, type);
+                return true;
             } else if (split[0].equalsIgnoreCase("resetallchallenges")) {
                 // Convert name to a UUID
                 final UUID playerUUID = plugin.getPlayers().getUUID(split[1], true);

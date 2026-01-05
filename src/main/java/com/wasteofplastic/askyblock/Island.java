@@ -36,6 +36,7 @@ import org.bukkit.block.Biome;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Hopper;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 
@@ -864,12 +865,33 @@ public class Island {
         int result = 0;
         for (Chunk chunk : getProtectionChunks()) {
             for (Entity entity : chunk.getEntities()) {
-                if (entity.isValid() && entity instanceof Villager && onIsland(entity.getLocation())) {
+                if (entity.isValid() && entity instanceof Villager && ((Villager) entity).getHealth() > 0 && onIsland(entity.getLocation())) {
                     result++;
                 }
             }
         }
         return result;
+    }
+
+    public void sendPopulation(Player player, EntityType type) {
+        final List<Entity> entities = new ArrayList<>();
+        for (Chunk chunk : getProtectionChunks()) {
+            for (Entity entity : chunk.getEntities()) {
+                if (entity.getType() == type && onIsland(entity.getLocation())) {
+                    entities.add(entity);
+                }
+            }
+        }
+
+        player.sendMessage(ChatColor.YELLOW + "Locations of " + type.name() + ": " + ChatColor.WHITE + entities.size());
+        for (int i = 0; i < entities.size(); i++) {
+            final boolean valid = entities.get(i).isValid();
+            final Location location = entities.get(i).getLocation();
+            final String formatted = location.getX() + " " + location.getY() + " " + location.getZ();
+            final ComponentBuilder builder = new ComponentBuilder(ChatColor.GOLD + String.valueOf(i) + "- " + ChatColor.WHITE + formatted + " " + (valid ? ChatColor.GREEN + "[valid]" : ChatColor.RED + "[invalid]"));
+            builder.event(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/tp " + formatted));
+            player.spigot().sendMessage(builder.create());
+        }
     }
 
     /**
