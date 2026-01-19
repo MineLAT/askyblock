@@ -2014,7 +2014,7 @@ public class IslandGuard implements Listener {
                 }
             }
             // Monster protection
-            if (e.getCaught() instanceof Monster || e.getCaught() instanceof Squid || e.getCaught() instanceof Slime) {
+            if (Entities.isMonster(e.getCaught())) {
                 if (island == null && !Settings.defaultWorldSettings.get(SettingsFlag.HURT_MONSTERS)) {
                     Util.sendMessage(e.getPlayer(), ChatColor.RED + plugin.myLocale(e.getPlayer().getUniqueId()).islandProtected);
                     e.setCancelled(true);
@@ -2662,7 +2662,7 @@ public class IslandGuard implements Listener {
                     inNether = true;
                 }
                 // Monsters being hurt
-                if (entity instanceof Monster || entity instanceof Slime || entity instanceof Squid) {
+                if (Entities.isMonster(entity)) {
                     // Normal island check
                     if (island != null && island.getMembers().contains(attacker.getUniqueId())) {
                         // Members always allowed

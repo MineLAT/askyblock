@@ -347,6 +347,11 @@ general:
    - WITHER
    - ENDERMAN
    - PIG_ZOMBIE
+   - ENDER_DRAGON
+   - SHULKER
+   - SQUID
+   - SKELETON_HORSE
+   - ZOMBIE_HORSE
    #- ZOMBIE_VILLAGER
 
    # Sets the limit for number of monsters that can spawn in a chunk in this world. 

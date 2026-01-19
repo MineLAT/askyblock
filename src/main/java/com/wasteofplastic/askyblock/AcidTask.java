@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import com.wasteofplastic.askyblock.util.Entities;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Animals;
@@ -39,7 +40,7 @@ public class AcidTask {
                         // Guardians are immune to acid too
                         continue;
                     }
-                    if ((current instanceof Monster) && Settings.mobAcidDamage > 0D) {
+                    if (Entities.isMonster(current) && Settings.mobAcidDamage > 0D) {
                         if ((current.getLocation().getBlock().getType() == Material.WATER)
                                 || (current.getLocation().getBlock().getType() == Material.STATIONARY_WATER)) {
                             ((Monster) current).damage(Settings.mobAcidDamage);

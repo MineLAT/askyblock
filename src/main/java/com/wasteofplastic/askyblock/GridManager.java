@@ -30,6 +30,7 @@ import java.util.TreeMap;
 import java.util.UUID;
 
 import com.wasteofplastic.askyblock.util.BigYamlConfiguration;
+import com.wasteofplastic.askyblock.util.Entities;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
@@ -1582,7 +1583,7 @@ public class GridManager {
                         // Don't remove if the entity is an NPC or has a name tag
                         if (e.getCustomName() != null || e.hasMetadata("NPC"))
                             continue;
-                        if (e instanceof Monster && !Settings.mobWhiteList.contains(e.getType())) {
+                        if (Entities.isMonster(e) && !Settings.mobWhiteList.contains(e.getType())) {
                             e.remove();
                         }
                     }
