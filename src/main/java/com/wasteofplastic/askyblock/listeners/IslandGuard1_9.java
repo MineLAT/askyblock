@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import com.wasteofplastic.askyblock.util.Entities;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -31,12 +32,9 @@ import org.bukkit.entity.Animals;
 import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.IronGolem;
-import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
-import org.bukkit.entity.Slime;
 import org.bukkit.entity.Snowman;
-import org.bukkit.entity.Squid;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -472,7 +470,7 @@ public class IslandGuard1_9 implements Listener {
                 inNether = true;
             }
             // Monsters being hurt
-            if (e.getEntity() instanceof Monster || e.getEntity() instanceof Slime || e.getEntity() instanceof Squid) {
+            if (Entities.isMonster(e.getEntity())) {
                 // Normal island check
                 if (island != null && island.getMembers().contains(attacker)) {
                     // Members always allowed

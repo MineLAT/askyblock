@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import com.wasteofplastic.askyblock.util.Entities;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -15,9 +16,7 @@ import org.bukkit.entity.Animals;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Slime;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -294,8 +293,8 @@ public class EntityLimits implements Listener {
                 || e.getSpawnReason().equals(SpawnReason.MOUNT)
                 || e.getSpawnReason().equals(SpawnReason.JOCKEY)
                 || e.getSpawnReason().equals(SpawnReason.NETHER_PORTAL)) {
-            if (e.getEntity() instanceof Monster || e.getEntity() instanceof Slime) {
-                if (!actionAllowed(e.getLocation(), SettingsFlag.MONSTER_SPAWN)) {                
+            if (Entities.isMonster(e.getEntity())) {
+                if (!actionAllowed(e.getLocation(), SettingsFlag.MONSTER_SPAWN)) {
                     if (DEBUG3)
                         plugin.getLogger().info("Natural monster spawn cancelled.");
                     // Mobs not allowed to spawn

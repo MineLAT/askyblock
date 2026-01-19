@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import com.wasteofplastic.askyblock.util.Entities;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -933,7 +934,7 @@ public class IslandGuard implements Listener {
             return;
         }
         // Monsters being hurt
-        if (e.getEntity() instanceof Monster || e.getEntity() instanceof Slime || e.getEntity() instanceof Squid) {
+        if (Entities.isMonster(e.getEntity())) {
             // Normal island check
             if (island != null && island.getMembers().contains(attacker.getUniqueId())) {
                 // Members always allowed
