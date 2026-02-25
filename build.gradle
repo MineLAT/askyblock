@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'com.gradleup.shadow' version '8.3.0'
+    id 'com.gradleup.shadow' version '9.3.1'
 }
 
 allprojects {
@@ -15,15 +15,13 @@ allprojects {
     }
 
     repositories {
-        maven { url 'https://central.sonatype.com/repository/maven-snapshots' }
-        maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
-        maven { url 'https://oss.sonatype.org/content/repositories/central' }
-        maven { url 'https://jitpack.io' }
         mavenCentral()
+        maven { url = uri('https://central.sonatype.com/repository/maven-snapshots') }
+        maven { url = uri('https://jitpack.io') }
     }
 
     dependencies {
-        compileOnly 'org.jetbrains:annotations:24.1.0'
+        compileOnly 'org.jetbrains:annotations:26.1.0'
     }
 
     compileJava {
@@ -37,9 +35,9 @@ allprojects {
 }
 
 repositories {
-    maven { url 'https://maven.enginehub.org/repo/' }
-    maven { url 'https://papermc.io/repo/repository/maven-public/' }
-    maven { url 'https://repo.essentialsx.net/snapshots/' }
+    maven { url = uri('https://maven.enginehub.org/repo/') }
+    maven { url = uri('https://papermc.io/repo/repository/maven-public/') }
+    maven { url = uri('https://repo.essentialsx.net/snapshots/') }
 }
 
 processResources {
@@ -75,8 +73,6 @@ dependencies {
     compileOnly('com.sk89q:worldguard:6.1.1-SNAPSHOT') { transitive = false }
     compileOnly 'net.luckperms:api:5.4'
     compileOnly('net.essentialsx:EssentialsXSpawn:2.21.0-SNAPSHOT') { transitive = false }
-
-    compileOnly 'org.jetbrains:annotations:24.1.0'
 
     compileOnly fileTree(dir: 'libs', includes: ['*.jar'])
 }
