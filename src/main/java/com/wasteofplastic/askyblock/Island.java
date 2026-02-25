@@ -865,8 +865,15 @@ public class Island {
         int result = 0;
         for (Chunk chunk : getProtectionChunks()) {
             for (Entity entity : chunk.getEntities()) {
-                if (entity.isValid() && entity instanceof Villager && ((Villager) entity).getHealth() > 0 && onIsland(entity.getLocation())) {
-                    result++;
+                if (entity.isValid() && entity instanceof Villager) {
+                    // Remove invalid villagers
+                    if (entity.getLocation().getY() < 0 || ((Villager) entity).getHealth() <= 0) {
+                        entity.remove();
+                        continue;
+                    }
+                    if (onIsland(entity.getLocation())) {
+                        result++;
+                    }
                 }
             }
         }

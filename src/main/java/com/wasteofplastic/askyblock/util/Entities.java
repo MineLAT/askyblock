@@ -36,6 +36,6 @@ public class Entities {
                 || entity instanceof Squid
                 || entity instanceof Slime
                 || entity instanceof ZombieHorse
-                || (DETECT_SHULKER || entity instanceof Shulker);
+                || (DETECT_SHULKER && entity instanceof Shulker);
     }
 }
