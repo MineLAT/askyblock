@@ -3,6 +3,7 @@ package com.wasteofplastic.askyblock.util;
 import org.apache.commons.lang.Validate;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.configuration.file.YamlConfigurationOptions;
 import org.bukkit.configuration.file.YamlConstructor;
 import org.bukkit.configuration.file.YamlRepresenter;
 import org.yaml.snakeyaml.DumperOptions;
@@ -16,17 +17,27 @@ import java.util.Map;
 
 public class BigYamlConfiguration extends YamlConfiguration {
 
-    private static final boolean USE_CODE_POINT_LIMIT;
+    private static final boolean USE_YAML_LIMIT;
+    private static final boolean USE_OPTIONS_LIMIT;
 
     static {
-        boolean result = false;
+        boolean useYamlLimit = false;
         for (Method method : LoaderOptions.class.getDeclaredMethods()) {
             if (method.getName().equals("setCodePointLimit")) {
-                result = true;
+                useYamlLimit = true;
                 break;
             }
         }
-        USE_CODE_POINT_LIMIT = result;
+        USE_YAML_LIMIT = useYamlLimit;
+
+        boolean useOptionsLimit = false;
+        for (Method method : YamlConfigurationOptions.class.getDeclaredMethods()) {
+            if (method.getName().equals("codePointLimit")) {
+                useOptionsLimit = true;
+                break;
+            }
+        }
+        USE_OPTIONS_LIMIT = useOptionsLimit;
     }
 
     private final DumperOptions yamlOptions = new DumperOptions();
@@ -34,8 +45,19 @@ public class BigYamlConfiguration extends YamlConfiguration {
     private final LoaderOptions loaderOptions = new LoaderOptions();
     private final Yaml yaml = new Yaml(new YamlConstructor(), yamlRepresenter, yamlOptions, loaderOptions);
 
+    public BigYamlConfiguration() {
+        super();
+        if (USE_OPTIONS_LIMIT) {
+            options().codePointLimit(Integer.MAX_VALUE);
+        }
+    }
+
     @Override
     public String saveToString() {
+        if (USE_OPTIONS_LIMIT) {
+            return super.saveToString();
+        }
+
         yamlOptions.setIndent(options().indent());
         yamlOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         yamlRepresenter.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
@@ -52,9 +74,14 @@ public class BigYamlConfiguration extends YamlConfiguration {
 
     @Override
     public void loadFromString(String contents) throws InvalidConfigurationException {
+        if (USE_OPTIONS_LIMIT) {
+            super.loadFromString(contents);
+            return;
+        }
+
         Validate.notNull(contents, "Contents cannot be null");
 
-        if (USE_CODE_POINT_LIMIT) {
+        if (USE_YAML_LIMIT) {
             loaderOptions.setCodePointLimit(500 * 1024 * 1024); // 500MB
         }
 

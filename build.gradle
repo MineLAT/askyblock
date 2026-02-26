@@ -29,12 +29,13 @@ allprojects {
     }
 
     java {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
 }
 
 repositories {
+    mavenLocal()
     maven { url = uri('https://maven.enginehub.org/repo/') }
     maven { url = uri('https://papermc.io/repo/repository/maven-public/') }
     maven { url = uri('https://repo.essentialsx.net/snapshots/') }
@@ -61,14 +62,8 @@ dependencies {
     implementation project(':nms:v1_11_R1')
     implementation project(':nms:v1_12_R1')
 
-    compileOnly('org.spigotmc:spigot-api:1.12.2-R0.1-SNAPSHOT') {
-        exclude group: 'org.yaml', module: 'snakeyaml'
-        exclude group: 'net.md-5', module: 'bungeecord-chat'
-    }
-    compileOnly 'org.yaml:snakeyaml:2.2'
-    compileOnly 'net.md-5:bungeecord-chat:1.16-R0.1'
+    compileOnly 'dev.pomf.dionysus:dionysus-server:1.12.2-SNAPSHOT'
 
-    compileOnly 'com.mojang:authlib:1.5.26'
     compileOnly('com.github.MilkBowl:VaultAPI:1.7.1') { transitive = false }
     compileOnly('com.sk89q:worldguard:6.1.1-SNAPSHOT') { transitive = false }
     compileOnly 'net.luckperms:api:5.4'
