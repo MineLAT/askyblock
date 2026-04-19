@@ -29,6 +29,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 
+import com.wasteofplastic.askyblock.panels.ControlPanel;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -1686,7 +1687,7 @@ public class Challenges implements CommandExecutor, TabCompleter {
             } else {
                 // We have no challenges!
                 plugin.getLogger().severe("There are no challenges to show!");
-                Inventory error = Bukkit.createInventory(null, 9, plugin.myLocale(player.getUniqueId()).challengesguiTitle);
+                Inventory error = new ControlPanel.ChallengesGui(9, plugin.myLocale(player.getUniqueId()).challengesguiTitle).getInventory();
                 Util.sendMessage(player, ChatColor.RED + plugin.myLocale(player.getUniqueId()).errorCommandNotReady);
                 return error;
             }
@@ -1746,7 +1747,7 @@ public class Challenges implements CommandExecutor, TabCompleter {
             // Make sure size is a multiple of 9
             int size = cp.size() + 8;
             size -= (size % 9);
-            Inventory newPanel = Bukkit.createInventory(null, size, plugin.myLocale(player.getUniqueId()).challengesguiTitle);
+            Inventory newPanel = new ControlPanel.ChallengesGui(size, plugin.myLocale(player.getUniqueId()).challengesguiTitle).getInventory();
             // Store the panel details for retrieval later
             playerChallengeGUI.put(player.getUniqueId(), cp);
             playerChallengeLevel.put(player.getUniqueId(), level);

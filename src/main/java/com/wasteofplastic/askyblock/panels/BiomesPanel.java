@@ -40,6 +40,7 @@ import com.wasteofplastic.askyblock.Island;
 import com.wasteofplastic.askyblock.Settings;
 import com.wasteofplastic.askyblock.util.Util;
 import com.wasteofplastic.askyblock.util.VaultHelper;
+import org.bukkit.inventory.InventoryHolder;
 
 public class BiomesPanel implements Listener {
     private ASkyBlock plugin;
@@ -112,7 +113,7 @@ public class BiomesPanel implements Listener {
             // Make sure size is a multiple of 9
             int size = items.size() + 8;
             size -= (size % 9);
-            Inventory newPanel = Bukkit.createInventory(null, size, plugin.myLocale().biomePanelTitle);
+            Inventory newPanel = new Gui(size, plugin.myLocale().biomePanelTitle).getInventory();
             // Fill the inventory and return
             for (BiomeItem i : items) {
                 newPanel.addItem(i.getItem());
@@ -134,7 +135,7 @@ public class BiomesPanel implements Listener {
         // clicked in
         int slot = event.getRawSlot();
         // Check this is the right panel
-        if (inventory.getName() == null || !inventory.getName().equals(plugin.myLocale().biomePanelTitle)) {
+        if (!(inventory.getHolder() instanceof Gui)) {
             return;
         }
         if (slot == -999) {
@@ -204,4 +205,17 @@ public class BiomesPanel implements Listener {
         return;
     }
 
+    private static class Gui implements InventoryHolder {
+
+        private final Inventory inventory;
+
+        public Gui(int size, String title) {
+            this.inventory = Bukkit.createInventory(this, size, title);
+        }
+
+        @Override
+        public Inventory getInventory() {
+            return inventory;
+        }
+    }
 }

@@ -37,6 +37,7 @@ import com.wasteofplastic.askyblock.Settings;
 import com.wasteofplastic.askyblock.schematics.Schematic;
 import com.wasteofplastic.askyblock.util.Util;
 import com.wasteofplastic.askyblock.util.VaultHelper;
+import org.bukkit.inventory.InventoryHolder;
 
 public class SchematicsPanel implements Listener {
     private ASkyBlock plugin;
@@ -76,7 +77,7 @@ public class SchematicsPanel implements Listener {
             // Make sure size is a multiple of 9
             int size = items.size() + 8;
             size -= (size % 9);
-            Inventory newPanel = Bukkit.createInventory(null, size, plugin.myLocale(player.getUniqueId()).schematicsTitle);
+            Inventory newPanel = new Gui(size, plugin.myLocale(player.getUniqueId()).schematicsTitle).getInventory();
             // Fill the inventory and return
             for (SPItem i : items) {
                 newPanel.setItem(i.getSlot(), i.getItem());
@@ -97,14 +98,11 @@ public class SchematicsPanel implements Listener {
         Player player = (Player) event.getWhoClicked(); // The player that
         // clicked the item
         Inventory inventory = event.getInventory(); // The inventory that was clicked in
-        if (inventory.getName() == null) {
+        // Check this is the right panel
+        if (!(inventory.getHolder() instanceof Gui)) {
             return;
         }
         int slot = event.getRawSlot();
-        // Check this is the right panel
-        if (!inventory.getName().equals(plugin.myLocale(player.getUniqueId()).schematicsTitle)) {
-            return;
-        }
         if (slot == -999) {
             player.closeInventory();
             inventory.clear();
@@ -155,5 +153,19 @@ public class SchematicsPanel implements Listener {
             thisPanel.clear();   
         }
         return;
+    }
+
+    private static class Gui implements InventoryHolder {
+
+        private final Inventory inventory;
+
+        public Gui(int size, String title) {
+            this.inventory = Bukkit.createInventory(this, size, title);
+        }
+
+        @Override
+        public Inventory getInventory() {
+            return inventory;
+        }
     }
 }

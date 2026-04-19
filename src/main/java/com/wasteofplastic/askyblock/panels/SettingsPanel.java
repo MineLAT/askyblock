@@ -42,6 +42,7 @@ import com.wasteofplastic.askyblock.Island;
 import com.wasteofplastic.askyblock.Island.SettingsFlag;
 import com.wasteofplastic.askyblock.Settings;
 import com.wasteofplastic.askyblock.util.Util;
+import org.bukkit.inventory.InventoryHolder;
 
 public class SettingsPanel implements Listener {
     // Island Guard Settings Panel
@@ -184,11 +185,7 @@ public class SettingsPanel implements Listener {
             // Make sure size is a multiple of 9
             int size = ip.size() + 8;
             size -= (size % 9);
-            String title = plugin.myLocale(uuid).igsTitle;
-            if (title.length() > 32) {
-                title = title.substring(0, 31);
-            }
-            newPanel = Bukkit.createInventory(null, size, title);
+            newPanel = new Gui(size, plugin.myLocale(uuid).igsTitle).getInventory();
             // Fill the inventory and return
             int slot = 0;
             for (IPItem i : ip) {
@@ -207,16 +204,14 @@ public class SettingsPanel implements Listener {
     public void onInventoryClick(InventoryClickEvent event) {
         Player player = (Player) event.getWhoClicked(); // The player that clicked the item
         Inventory inventory = event.getInventory(); // The inventory that was clicked in
-        if (inventory.getName() == null) {
-            return;
-        }
-        int slot = event.getRawSlot();
         // Check this is the right panel
-        if (!inventory.getName().equals(plugin.myLocale(player.getUniqueId()).igsTitle)) {
+        if (!(inventory.getHolder() instanceof Gui)) {
             return;
         }
         // Stop removal of items
         event.setCancelled(true);
+
+        int slot = event.getRawSlot();
         if (event.getSlotType() == SlotType.OUTSIDE) {
             player.closeInventory();
             inventory.clear();
@@ -358,6 +353,20 @@ public class SettingsPanel implements Listener {
             //player.closeInventory();
             inventory.clear();
             player.openInventory(islandGuardPanel(player));
+        }
+    }
+
+    private static class Gui implements InventoryHolder {
+
+        private final Inventory inventory;
+
+        public Gui(int size, String title) {
+            this.inventory = Bukkit.createInventory(this, size, title);
+        }
+
+        @Override
+        public Inventory getInventory() {
+            return inventory;
         }
     }
 }

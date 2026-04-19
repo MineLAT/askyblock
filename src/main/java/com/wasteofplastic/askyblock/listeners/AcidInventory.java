@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.wasteofplastic.askyblock.panels.ControlPanel;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -76,7 +77,7 @@ public class AcidInventory implements Listener {
                 return;
             }
             // If this is the minishop - forget it
-            if (inventory.getName() != null && inventory.getName().equalsIgnoreCase(plugin.myLocale(e.getPlayer().getUniqueId()).islandMiniShopTitle)) {
+            if (inventory.getHolder() instanceof ControlPanel.MiniShopGui) {
                 return;
             }
             if (inventory.contains(Material.WATER_BUCKET)) {

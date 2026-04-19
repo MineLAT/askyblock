@@ -38,6 +38,7 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType.SlotType;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
@@ -232,12 +233,12 @@ public class WarpPanel implements Listener, Requester {
         for (i = 0; i < panelNumber; i++) {
             if (DEBUG)
                 plugin.getLogger().info("DEBUG: created panel " + (i+1));
-            updated.add(Bukkit.createInventory(null, PANELSIZE, plugin.myLocale().warpsTitle + " #" + (i+1)));
+            updated.add(new Gui(PANELSIZE, plugin.myLocale().warpsTitle + (i+1), i+1).getInventory());
         }
         // Make the last panel
         if (DEBUG)
             plugin.getLogger().info("DEBUG: created panel " + (i+1));
-        updated.add(Bukkit.createInventory(null, remainder, plugin.myLocale().warpsTitle + " #" + (i+1)));
+        updated.add(new Gui(remainder, plugin.myLocale().warpsTitle + (i+1), i+1).getInventory());
         warpPanel = new ArrayList<>(updated);
         panelNumber = 0;
         int slot = 0;
@@ -281,13 +282,9 @@ public class WarpPanel implements Listener, Requester {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
     public void onInventoryClick(InventoryClickEvent event) {
         Inventory inventory = event.getInventory(); // The inventory that was clicked in
-        if (inventory.getName() == null) {
-            return;
-        }
         // The player that clicked the item
         final Player player = (Player) event.getWhoClicked();
-        String title = inventory.getTitle();
-        if (!inventory.getTitle().startsWith(plugin.myLocale().warpsTitle + " #")) {
+        if (!(inventory.getHolder() instanceof Gui gui)) {
             return;
         }
         event.setCancelled(true);
@@ -310,12 +307,7 @@ public class WarpPanel implements Listener, Requester {
         if (event.getRawSlot() >= event.getInventory().getSize() || clicked.getType() == Material.AIR) {
             return;
         }
-        int panelNumber = 0;
-        try {
-            panelNumber = Integer.valueOf(title.substring(title.indexOf('#')+ 1));
-        } catch (Exception e) {
-            panelNumber = 0;
-        }
+        int panelNumber = gui.getPanelNumber();
         if (clicked.getItemMeta().hasDisplayName()) {
             String command = ChatColor.stripColor(clicked.getItemMeta().getDisplayName());
             if (DEBUG)
@@ -353,5 +345,25 @@ public class WarpPanel implements Listener, Requester {
                 }
             }
         }   
+    }
+
+    private static class Gui implements InventoryHolder {
+
+        private final Inventory inventory;
+        private final int panelNumber;
+
+        public Gui(int size, String title, int panelNumber) {
+            this.inventory = Bukkit.createInventory(this, size, title);
+            this.panelNumber = panelNumber;
+        }
+
+        @Override
+        public Inventory getInventory() {
+            return inventory;
+        }
+
+        public int getPanelNumber() {
+            return panelNumber;
+        }
     }
 }

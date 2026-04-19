@@ -33,6 +33,7 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType.SlotType;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
 import com.wasteofplastic.askyblock.ASkyBlock;
@@ -103,7 +104,7 @@ public class ControlPanel implements Listener {
             // Get how many the store should be
             int size = items.getKeys(false).size() + 8;
             size -= (size % 9);
-            miniShop = Bukkit.createInventory(null, size, plugin.myLocale().islandMiniShopTitle);
+            miniShop = new MiniShopGui(size, plugin.myLocale().islandMiniShopTitle).getInventory();
             // Run through items
             int slot = 0;
             for (String item : items.getKeys(false)) {
@@ -164,7 +165,7 @@ public class ControlPanel implements Listener {
                     int size = buttons.getKeys(false).size() + 8;
                     size -= (size % 9);
                     // Add inventory to map of inventories
-                    controlPanel.put(panelName, Bukkit.createInventory(null, size, panelName));
+                    controlPanel.put(panelName, new Gui(size, panelName, panelName).getInventory());
                     // Run through buttons
                     int slot = 0;
                     for (String item : buttons.getKeys(false)) {
@@ -214,7 +215,7 @@ public class ControlPanel implements Listener {
         // ASkyBlock plugin = ASkyBlock.getPlugin();
         int slot = event.getRawSlot();
         // Challenges
-        if (inventory.getName().equals(plugin.myLocale(player.getUniqueId()).challengesguiTitle)) {
+        if (inventory.getHolder() instanceof ChallengesGui) {
             event.setCancelled(true);
             if (event.getClick().equals(ClickType.SHIFT_RIGHT)) {
                 inventory.clear();
@@ -289,7 +290,7 @@ public class ControlPanel implements Listener {
         /*
          * Minishop section
          */
-        if (miniShop != null && inventory.getName().equals(miniShop.getName())) {
+        if (miniShop != null && inventory.getHolder() instanceof MiniShopGui) {
             String message = "";
             event.setCancelled(true); // Don't let them pick it up
             if (!Settings.useEconomy || slot == -999) {
@@ -357,7 +358,7 @@ public class ControlPanel implements Listener {
         }
         // Check control panels
         for (String panelName : controlPanel.keySet()) {
-            if (inventory.getName().equals(panelName)) {
+            if (inventory instanceof Gui gui && gui.getPanelName().equals(panelName)) {
                 event.setCancelled(true);
                 if (slot == -999) {
                     player.closeInventory();
@@ -401,4 +402,51 @@ public class ControlPanel implements Listener {
         return defaultPanelName;
     }
 
+    public static class ChallengesGui implements InventoryHolder {
+
+        private final Inventory inventory;
+
+        public ChallengesGui(int size, String title) {
+            this.inventory = Bukkit.createInventory(this, size, title);
+        }
+
+        @Override
+        public Inventory getInventory() {
+            return inventory;
+        }
+    }
+
+    public static class MiniShopGui implements InventoryHolder {
+
+        private final Inventory inventory;
+
+        protected MiniShopGui(int size, String title) {
+            this.inventory = Bukkit.createInventory(this, size, title);
+        }
+
+        @Override
+        public Inventory getInventory() {
+            return inventory;
+        }
+    }
+
+    private static class Gui implements InventoryHolder {
+
+        private final Inventory inventory;
+        private final String panelName;
+
+        public Gui(int size, String title, String panelName) {
+            this.inventory = Bukkit.createInventory(this, size, title);
+            this.panelName = panelName;
+        }
+
+        @Override
+        public Inventory getInventory() {
+            return inventory;
+        }
+
+        public String getPanelName() {
+            return panelName;
+        }
+    }
 }
