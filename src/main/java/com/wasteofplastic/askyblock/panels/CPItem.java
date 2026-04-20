@@ -19,6 +19,7 @@ package com.wasteofplastic.askyblock.panels;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -111,6 +112,14 @@ public class CPItem {
     }
 
     public ItemStack getItem() {
+        return item;
+    }
+
+    public ItemStack getItem(Consumer<ItemMeta> consumer) {
+        final ItemStack item = this.item.clone();
+        final ItemMeta meta = item.getItemMeta();
+        consumer.accept(meta);
+        item.setItemMeta(meta);
         return item;
     }
 

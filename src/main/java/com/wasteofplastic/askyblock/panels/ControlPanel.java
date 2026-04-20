@@ -34,6 +34,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType.SlotType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 
 import com.wasteofplastic.askyblock.ASkyBlock;
@@ -44,6 +45,9 @@ import com.wasteofplastic.askyblock.util.Util;
 import com.wasteofplastic.askyblock.util.VaultHelper;
 
 import net.milkbowl.vault.economy.EconomyResponse;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author tastybento
@@ -51,6 +55,7 @@ import net.milkbowl.vault.economy.EconomyResponse;
  */
 public class ControlPanel implements Listener {
 
+    private static final Logger log = LoggerFactory.getLogger(ControlPanel.class);
     private static YamlConfiguration miniShopFile;
     private static HashMap<Integer, MiniShopItem> store = new HashMap<Integer, MiniShopItem>();
     private static YamlConfiguration cpFile;
@@ -68,11 +73,6 @@ public class ControlPanel implements Listener {
         }
         loadControlPanel();
     }
-
-    /**
-     * Map of panel contents by name
-     */
-    private static HashMap<String, HashMap<Integer, CPItem>> panels = new HashMap<String, HashMap<Integer, CPItem>>();
 
     /**
      * Map of CP inventories by name
@@ -138,8 +138,6 @@ public class ControlPanel implements Listener {
      */
     public static void loadControlPanel() {
         ASkyBlock plugin = ASkyBlock.getPlugin();
-        // Map of known panel contents by name
-        panels.clear();
         // Map of panel inventories by name
         controlPanel.clear();
         cpFile = Util.loadYamlFile("controlpanel.yml");
@@ -161,15 +159,24 @@ public class ControlPanel implements Listener {
                 }
                 ConfigurationSection buttons = cpFile.getConfigurationSection(panel + ".buttons");
                 if (buttons != null) {
-                    // Get how many buttons can be in the CP
-                    int size = buttons.getKeys(false).size() + 8;
-                    size -= (size % 9);
-                    // Add inventory to map of inventories
-                    controlPanel.put(panelName, new Gui(size, panelName, panelName).getInventory());
-                    // Run through buttons
-                    int slot = 0;
+                    int maxSlot = 0;
                     for (String item : buttons.getKeys(false)) {
                         try {
+                            int slot = Integer.parseInt(item);
+                            if (slot > maxSlot) {
+                                maxSlot = slot;
+                            }
+                        } catch (Exception ignored) { }
+                    }
+                    // Get how many buttons can be in the CP
+                    int size = maxSlot + 8;
+                    size -= (size % 9);
+                    // Add inventory to map of inventories
+                    controlPanel.put(panelName, new Gui(size, panelName, cp).getInventory());
+                    // Run through buttons
+                    for (String item : buttons.getKeys(false)) {
+                        try {
+                            int slot = Integer.parseInt(item);
                             String m = buttons.getString(item + ".material", "BOOK");
                             // Split off damage
                             String[] icon = m.split(":");
@@ -187,16 +194,13 @@ public class ControlPanel implements Listener {
                             }
                             CPItem cpItem = new CPItem(i, description, command, nextSection);
                             cp.put(slot, cpItem);
-                            controlPanel.get(panelName).setItem(slot, cpItem.getItem());
-                            slot++;
+                            controlPanel.get(panelName).setItem(slot, cpItem.getItem(meta -> meta.addItemFlags(ItemFlag.values())));
                         } catch (Exception e) {
-                            plugin.getLogger().warning("Problem loading control panel " + panel + " item #" + slot);
+                            plugin.getLogger().warning("Problem loading control panel " + panel + " item '" + item + "'");
                             plugin.getLogger().warning(e.getMessage());
                             e.printStackTrace();
                         }
                     }
-                    // Add overall control panel
-                    panels.put(panelName, cp);
                 }
             }
         }
@@ -209,9 +213,6 @@ public class ControlPanel implements Listener {
         // clicked the item
         ItemStack clicked = event.getCurrentItem(); // The item that was clicked
         Inventory inventory = event.getInventory(); // The inventory that was clicked in
-        if (inventory.getName() == null) {
-            return;
-        }
         // ASkyBlock plugin = ASkyBlock.getPlugin();
         int slot = event.getRawSlot();
         // Challenges
@@ -357,40 +358,39 @@ public class ControlPanel implements Listener {
             return;
         }
         // Check control panels
-        for (String panelName : controlPanel.keySet()) {
-            if (inventory instanceof Gui gui && gui.getPanelName().equals(panelName)) {
-                event.setCancelled(true);
-                if (slot == -999) {
-                    player.closeInventory();
-                    return;
-                }
-                if (event.getClick().equals(ClickType.SHIFT_RIGHT)) {                    
-                    player.closeInventory();
-                    player.updateInventory();
-                    return;
-                }
-                HashMap<Integer, CPItem> thisPanel = panels.get(panelName);
-                if (slot >= 0 && slot < thisPanel.size()) {
-                    // Do something
-                    String command = thisPanel.get(slot).getCommand();
-                    String nextSection = ChatColor.translateAlternateColorCodes('&', thisPanel.get(slot).getNextSection());
-                    if (!command.isEmpty()) {
-                        player.closeInventory(); // Closes the inventory
-                        event.setCancelled(true);
-                        Util.runCommand(player, command);
-                        return;
-                    }
-                    if (!nextSection.isEmpty()) {
-                        player.closeInventory(); // Closes the inventory
-                        Inventory next = controlPanel.get(nextSection);
-                        player.openInventory(next);
-                        event.setCancelled(true);
-                        return;
-                    }
+        if (inventory.getHolder() instanceof Gui gui) {
+            event.setCancelled(true);
+            if (slot == -999) {
+                player.closeInventory();
+                return;
+            }
+            if (event.getClick().equals(ClickType.SHIFT_RIGHT)) {
+                player.closeInventory();
+                player.updateInventory();
+                return;
+            }
+            Map<Integer, CPItem> thisPanel = gui.getPanels();
+            final CPItem cpItem = thisPanel.get(slot);
+            if (cpItem != null) {
+                // Do something
+                String command = cpItem.getCommand();
+                String nextSection = ChatColor.translateAlternateColorCodes('&', cpItem.getNextSection());
+                if (!command.isEmpty()) {
                     player.closeInventory(); // Closes the inventory
+                    event.setCancelled(true);
+                    Util.runCommand(player, command);
+                    return;
+                }
+                if (!nextSection.isEmpty()) {
+                    player.closeInventory(); // Closes the inventory
+                    Inventory next = controlPanel.get(nextSection);
+                    player.openInventory(next);
                     event.setCancelled(true);
                     return;
                 }
+                player.closeInventory(); // Closes the inventory
+                event.setCancelled(true);
+                return;
             }
         }
     }
@@ -433,11 +433,11 @@ public class ControlPanel implements Listener {
     private static class Gui implements InventoryHolder {
 
         private final Inventory inventory;
-        private final String panelName;
+        private final Map<Integer, CPItem> panels;
 
-        public Gui(int size, String title, String panelName) {
+        public Gui(int size, String title, Map<Integer, CPItem> panels) {
             this.inventory = Bukkit.createInventory(this, size, title);
-            this.panelName = panelName;
+            this.panels = panels;
         }
 
         @Override
@@ -445,8 +445,9 @@ public class ControlPanel implements Listener {
             return inventory;
         }
 
-        public String getPanelName() {
-            return panelName;
+        @NotNull
+        public Map<Integer, CPItem> getPanels() {
+            return panels;
         }
     }
 }
