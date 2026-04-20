@@ -111,12 +111,12 @@ public class BiomesPanel implements Listener {
             // Save the items for later retrieval when the player clicks on them
             biomeItems.put(player.getUniqueId(), items);
             // Make sure size is a multiple of 9
-            int size = items.size() + 8;
+            int size = PanelHolder.INNER_SLOTS[items.size()] + 9 + 8;
             size -= (size % 9);
             Inventory newPanel = new Gui(size, plugin.myLocale().biomePanelTitle).getInventory();
             // Fill the inventory and return
             for (BiomeItem i : items) {
-                newPanel.addItem(i.getItem());
+                newPanel.setItem(PanelHolder.INNER_SLOTS[i.getSlot()], i.getItem());
             }
             return newPanel;
         } else {

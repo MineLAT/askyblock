@@ -127,7 +127,15 @@ public class SettingsPanel implements Listener {
         UUID uuid = player.getUniqueId();
         // Get the island settings for this player's location
         Island island = plugin.getGrid().getProtectedIslandAt(player.getLocation());
-        List<IPItem> ip = new ArrayList<IPItem>();
+        List<IPItem> ip = new ArrayList<IPItem>() {
+            int slot = 0;
+
+            @Override
+            public boolean add(IPItem ipItem) {
+                ipItem.setSlot(slot++);
+                return super.add(ipItem);
+            }
+        };
         Inventory newPanel = null;
         if (island == null) {
             //plugin.getLogger().info("DEBUG: default world settings");
@@ -182,15 +190,14 @@ public class SettingsPanel implements Listener {
             }
         }
         if (ip.size() > 0) {
-            // Make sure size is a multiple of 9
-            int size = ip.size() + 8;
-            size -= (size % 9);
-            newPanel = new Gui(size, plugin.myLocale(uuid).igsTitle).getInventory();
+            newPanel = new Gui(54, plugin.myLocale(uuid).igsTitle).getInventory();
             // Fill the inventory and return
-            int slot = 0;
             for (IPItem i : ip) {
-                i.setSlot(slot);
-                newPanel.addItem(i.getItem());
+                if (i.getSlot() >= PanelHolder.INNER_SLOTS.length) {
+                    plugin.getLogger().warning("Too many settings to display! Some will be missing from the GUI.");
+                    break;
+                }
+                newPanel.setItem(PanelHolder.INNER_SLOTS[i.getSlot()], i.getItem());
             }
         }	    
         return newPanel;
