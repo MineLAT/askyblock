@@ -1064,7 +1064,7 @@ public class IslandCmd implements CommandExecutor, TabCompleter {
             } else {
                 // Island command
                 // Check if this should open the Control Panel or not
-                if (VaultHelper.checkPerm(player, Settings.PERMPREFIX + "island.controlpanel") && plugin.getPlayers().getControlPanel(playerUUID)) {
+                if (VaultHelper.checkPerm(player, Settings.PERMPREFIX + "island.override.controlpanel") || (VaultHelper.checkPerm(player, Settings.PERMPREFIX + "island.controlpanel") && plugin.getPlayers().getControlPanel(playerUUID))) {
                     Util.runCommand(player, Settings.ISLANDCOMMAND + " cp");
                 } else {
                     // Check permission
@@ -1287,7 +1287,7 @@ public class IslandCmd implements CommandExecutor, TabCompleter {
                         }
                         return true;
                     }
-                } else if (split[0].equalsIgnoreCase("go")) {
+                } else if (split[0].equalsIgnoreCase("go") || split[0].equalsIgnoreCase("tp")) {
                     if (!VaultHelper.checkPerm(player, Settings.PERMPREFIX + "island.go")) {
                         Util.sendMessage(player, ChatColor.RED + plugin.myLocale(player.getUniqueId()).errorNoPermission);
                         return true;
@@ -1523,7 +1523,7 @@ public class IslandCmd implements CommandExecutor, TabCompleter {
                     Util.sendMessage(player, ChatColor.RED + plugin.myLocale(playerUUID).errorNoPermission);
                     return true;
                 }
-            } else if (split[0].equalsIgnoreCase("help")) {
+            } else if (split[0].equalsIgnoreCase("help") && VaultHelper.checkPerm(player, Settings.PERMPREFIX + "island.help")) {
                 Util.sendMessage(player, plugin.myLocale(player.getUniqueId()).helpColor + plugin.myLocale(player.getUniqueId()).helpHeader.replace("[plugin]", plugin.getDescription().getName()).replace("[version]", plugin.getDescription().getVersion()));
                 if (Settings.useControlPanel) {
                     Util.sendMessage(player, plugin.myLocale(player.getUniqueId()).helpColor + "/" + label + ": " + ChatColor.WHITE + plugin.myLocale(player.getUniqueId()).islandhelpControlPanel);
@@ -2173,7 +2173,7 @@ public class IslandCmd implements CommandExecutor, TabCompleter {
                         }
                     } else
                         // Multi home
-                        if (split[0].equalsIgnoreCase("go")) {
+                        if (split[0].equalsIgnoreCase("go") || split[0].equalsIgnoreCase("tp")) {
                             if (!plugin.getPlayers().hasIsland(playerUUID) && !plugin.getPlayers().inTeam(playerUUID)) {
                                 // Player has no island
                                 Util.sendMessage(player, ChatColor.RED + plugin.myLocale(player.getUniqueId()).errorNoIsland);
@@ -3513,15 +3513,20 @@ public class IslandCmd implements CommandExecutor, TabCompleter {
         switch (args.length) {
         case 0:
         case 1:
-            options.add("help"); //No permission needed.
+            if (VaultHelper.checkPerm(player, Settings.PERMPREFIX + "island.help")) {
+                options.add("help");
+            }
             //options.add("make"); //Make is currently a private command never accessible to the player
             if (VaultHelper.checkPerm(player, Settings.PERMPREFIX + "island.go")) {
                 options.add("go");
+                options.add("tp");
             }
             if (VaultHelper.checkPerm(player, Settings.PERMPREFIX + "island.name") && plugin.getPlayers().hasIsland(player.getUniqueId())) {
                 options.add("name");
             }
-            options.add("about"); //No permission needed. :-) Indeed.
+            if (VaultHelper.checkPerm(player, Settings.PERMPREFIX + "island.about")) {
+                options.add("about");
+            }
             if (plugin.getGrid() != null && plugin.getGrid().getSpawn() != null) {
                 options.add("spawn");
             }
@@ -3608,7 +3613,7 @@ public class IslandCmd implements CommandExecutor, TabCompleter {
                 options.addAll(schematics.keySet());
             }
             if (VaultHelper.checkPerm(player, Settings.PERMPREFIX + "island.sethome")) {
-                if (args[0].equalsIgnoreCase("go") || args[0].equalsIgnoreCase("sethome")) {
+                if (args[0].equalsIgnoreCase("go") || args[0].equalsIgnoreCase("tp") || args[0].equalsIgnoreCase("sethome")) {
                     // Dynamic home sizes with permissions
                     int maxHomes = Settings.maxHomes;
                     for (PermissionAttachmentInfo perms : player.getEffectivePermissions()) {
