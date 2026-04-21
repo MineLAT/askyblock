@@ -20,7 +20,7 @@ package com.wasteofplastic.askyblock.panels;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
+import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -38,10 +38,10 @@ import com.wasteofplastic.askyblock.schematics.Schematic;
 import com.wasteofplastic.askyblock.util.Util;
 import com.wasteofplastic.askyblock.util.VaultHelper;
 import org.bukkit.inventory.InventoryHolder;
+import org.jetbrains.annotations.Nullable;
 
 public class SchematicsPanel implements Listener {
     private ASkyBlock plugin;
-    private HashMap<UUID, List<SPItem>> schematicItems = new HashMap<UUID, List<SPItem>>();
 
     /**
      * @param plugin - ASkyBlock plugin object
@@ -72,17 +72,15 @@ public class SchematicsPanel implements Listener {
         //plugin.getLogger().info("DEBUG: there are " + items.size() + " in the panel");
         // Now create the inventory panel
         if (items.size() > 0) {
-            // Save the items for later retrieval when the player clicks on them
-            schematicItems.put(player.getUniqueId(), items);
             // Make sure size is a multiple of 9
-            int size = items.size() + 8;
+            int size = PanelHolder.INNER_SLOTS[items.size()] + 9 + 8;
             size -= (size % 9);
-            Inventory newPanel = new Gui(size, plugin.myLocale(player.getUniqueId()).schematicsTitle).getInventory();
+            Gui newPanel = new Gui(size, plugin.myLocale(player.getUniqueId()).schematicsTitle);
             // Fill the inventory and return
             for (SPItem i : items) {
-                newPanel.setItem(i.getSlot(), i.getItem());
+                newPanel.setItem(PanelHolder.INNER_SLOTS[i.getSlot()], i);
             }
-            return newPanel;
+            return newPanel.getInventory();
         } else {
             Util.sendMessage(player, ChatColor.RED + plugin.myLocale().errorCommandNotReady);
         }
@@ -99,65 +97,54 @@ public class SchematicsPanel implements Listener {
         // clicked the item
         Inventory inventory = event.getInventory(); // The inventory that was clicked in
         // Check this is the right panel
-        if (!(inventory.getHolder() instanceof Gui)) {
+        if (!(inventory.getHolder() instanceof Gui gui)) {
             return;
         }
+        event.setCancelled(true);
         int slot = event.getRawSlot();
         if (slot == -999) {
             player.closeInventory();
             inventory.clear();
-            schematicItems.remove(player.getUniqueId());
-            event.setCancelled(true);
             return;
         }
         if (event.getClick().equals(ClickType.SHIFT_RIGHT)) {
-            event.setCancelled(true);
             player.closeInventory();
             inventory.clear();
-            schematicItems.remove(player.getUniqueId());
             player.updateInventory();
             return;
         }
-        // Get the list of items for this player
-        List<SPItem> thisPanel = schematicItems.get(player.getUniqueId());
-        if (thisPanel == null) {
+        // Get the item clicked
+        SPItem item = gui.getItem(slot);
+        if (item == null) {
             player.closeInventory();
             inventory.clear();
-            schematicItems.remove(player.getUniqueId());
-            event.setCancelled(true);
             return;
         }
-        if (slot >= 0 && slot < thisPanel.size()) {
-            event.setCancelled(true);
-            // plugin.getLogger().info("DEBUG: slot is " + slot);
-            player.closeInventory(); // Closes the inventory
-            inventory.clear();
-            // Get the item clicked
-            SPItem item = thisPanel.get(slot);
-            // Check cost
-            if (item.getCost() > 0) {
-                if (Settings.useEconomy && VaultHelper.setupEconomy() && !VaultHelper.econ.has(player, item.getCost())) {
-                    // Too expensive
-                    Util.sendMessage(player, ChatColor.RED + plugin.myLocale(player.getUniqueId()).minishopYouCannotAfford.replace("[description]", item.getName()));        
-                } else {
-                    // Do something
-                    if (Settings.useEconomy && VaultHelper.setupEconomy()) {
-                        VaultHelper.econ.withdrawPlayer(player, item.getCost());                   
-                    } 
-                    Util.runCommand(player, Settings.ISLANDCOMMAND + " make " + item.getHeading());
-                }
+
+        // plugin.getLogger().info("DEBUG: slot is " + slot);
+        player.closeInventory(); // Closes the inventory
+        inventory.clear();
+        // Check cost
+        if (item.getCost() > 0) {
+            if (Settings.useEconomy && VaultHelper.setupEconomy() && !VaultHelper.econ.has(player, item.getCost())) {
+                // Too expensive
+                Util.sendMessage(player, ChatColor.RED + plugin.myLocale(player.getUniqueId()).minishopYouCannotAfford.replace("[description]", item.getName()));
             } else {
+                // Do something
+                if (Settings.useEconomy && VaultHelper.setupEconomy()) {
+                    VaultHelper.econ.withdrawPlayer(player, item.getCost());
+                }
                 Util.runCommand(player, Settings.ISLANDCOMMAND + " make " + item.getHeading());
             }
-            schematicItems.remove(player.getUniqueId());
-            thisPanel.clear();   
+        } else {
+            Util.runCommand(player, Settings.ISLANDCOMMAND + " make " + item.getHeading());
         }
-        return;
     }
 
     private static class Gui implements InventoryHolder {
 
         private final Inventory inventory;
+        private final Map<Integer, SPItem> items = new HashMap<>();
 
         public Gui(int size, String title) {
             this.inventory = Bukkit.createInventory(this, size, title);
@@ -166,6 +153,16 @@ public class SchematicsPanel implements Listener {
         @Override
         public Inventory getInventory() {
             return inventory;
+        }
+
+        @Nullable
+        public SPItem getItem(int slot) {
+            return items.get(slot);
+        }
+
+        public void setItem(int slot, SPItem item) {
+            items.put(slot, item);
+            inventory.setItem(slot, item.getItem());
         }
     }
 }

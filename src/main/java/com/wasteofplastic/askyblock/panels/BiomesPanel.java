@@ -20,6 +20,7 @@ package com.wasteofplastic.askyblock.panels;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.lang.StringUtils;
@@ -41,10 +42,10 @@ import com.wasteofplastic.askyblock.Settings;
 import com.wasteofplastic.askyblock.util.Util;
 import com.wasteofplastic.askyblock.util.VaultHelper;
 import org.bukkit.inventory.InventoryHolder;
+import org.jetbrains.annotations.Nullable;
 
 public class BiomesPanel implements Listener {
     private ASkyBlock plugin;
-    private HashMap<UUID, List<BiomeItem>> biomeItems = new HashMap<UUID, List<BiomeItem>>();
 
     /**
      * @param plugin - ASkyBlock plugin object
@@ -108,17 +109,15 @@ public class BiomesPanel implements Listener {
         }
         // Now create the inventory panel
         if (items.size() > 0) {
-            // Save the items for later retrieval when the player clicks on them
-            biomeItems.put(player.getUniqueId(), items);
             // Make sure size is a multiple of 9
             int size = PanelHolder.INNER_SLOTS[items.size()] + 9 + 8;
             size -= (size % 9);
-            Inventory newPanel = new Gui(size, plugin.myLocale().biomePanelTitle).getInventory();
+            Gui newPanel = new Gui(size, plugin.myLocale().biomePanelTitle);
             // Fill the inventory and return
             for (BiomeItem i : items) {
-                newPanel.setItem(PanelHolder.INNER_SLOTS[i.getSlot()], i.getItem());
+                newPanel.setItem(PanelHolder.INNER_SLOTS[i.getSlot()], i);
             }
-            return newPanel;
+            return newPanel.getInventory();
         } else {
             Util.sendMessage(player, ChatColor.RED + plugin.myLocale(player.getUniqueId()).errorCommandNotReady);
             plugin.getLogger().warning("There are no biomes in config.yml so /island biomes will not work!");
@@ -135,79 +134,75 @@ public class BiomesPanel implements Listener {
         // clicked in
         int slot = event.getRawSlot();
         // Check this is the right panel
-        if (!(inventory.getHolder() instanceof Gui)) {
+        if (!(inventory.getHolder() instanceof Gui gui)) {
             return;
         }
+        event.setCancelled(true);
         if (slot == -999) {
             inventory.clear();
             player.closeInventory();
-            event.setCancelled(true);
             return;
         }
         if (event.getClick().equals(ClickType.SHIFT_RIGHT)) {
-            event.setCancelled(true);
             inventory.clear();
             player.closeInventory();
             player.updateInventory();
             return;
         }
 
-        // Get the list of items for this player
-        List<BiomeItem> thisPanel = biomeItems.get(player.getUniqueId());
-        if (thisPanel == null) {
+        final BiomeItem biomeItem = gui.getItem(slot);
+        if (biomeItem == null) {
             inventory.clear();
             player.closeInventory();
-            event.setCancelled(true);
             return;
         }
-        if (slot >= 0 && slot < thisPanel.size()) {
+
+        // plugin.getLogger().info("DEBUG: slot is " + slot);
+        // Do something
+        // Check this player has an island
+        Island island = plugin.getGrid().getIsland(playerUUID);
+        if (island == null) {
+            Util.sendMessage(player, ChatColor.RED + plugin.myLocale(player.getUniqueId()).errorNoIsland);
+            return;
+        }
+        // Check ownership
+        if (!island.getOwner().equals(playerUUID)) {
+            Util.sendMessage(player, ChatColor.RED + plugin.myLocale(player.getUniqueId()).levelerrornotYourIsland);
+            return;
+        }
+        if (!plugin.getGrid().playerIsOnIsland(player)) {
+            Util.sendMessage(player, ChatColor.RED + plugin.myLocale(player.getUniqueId()).challengeserrorNotOnIsland);
+            return;
+        }
+
+        Biome biome = biomeItem.getBiome();
+        if (biome != null) {
             event.setCancelled(true);
-            // plugin.getLogger().info("DEBUG: slot is " + slot);
-            // Do something
-            // Check this player has an island
-            Island island = plugin.getGrid().getIsland(playerUUID);
-            if (island == null) {
-                Util.sendMessage(player, ChatColor.RED + plugin.myLocale(player.getUniqueId()).errorNoIsland);
-                return;
-            }
-            // Check ownership
-            if (!island.getOwner().equals(playerUUID)) {
-                Util.sendMessage(player, ChatColor.RED + plugin.myLocale(player.getUniqueId()).levelerrornotYourIsland);
-                return; 
-            }
-            if (!plugin.getGrid().playerIsOnIsland(player)) {
-                Util.sendMessage(player, ChatColor.RED + plugin.myLocale(player.getUniqueId()).challengeserrorNotOnIsland);
-                return;
-            }
-            Biome biome = thisPanel.get(slot).getBiome();
-            if (biome != null) {
-                event.setCancelled(true);
-                if (Settings.useEconomy) {
-                    // Check cost
-                    double cost = thisPanel.get(slot).getPrice();
-                    if (cost > 0D) {
-                        if (!VaultHelper.econ.has(player, Settings.worldName, cost)) {
-                            Util.sendMessage(player, ChatColor.RED + plugin.myLocale(player.getUniqueId()).minishopYouCannotAfford.replace("[description]", VaultHelper.econ.format(cost)));
-                            return;
-                        } else {
-                            VaultHelper.econ.withdrawPlayer(player, Settings.worldName, cost);
-                            Util.sendMessage(player, ChatColor.GREEN + plugin.myLocale(player.getUniqueId()).biomeYouBought.replace("[cost]", VaultHelper.econ.format(cost)));
-                        }
+            if (Settings.useEconomy) {
+                // Check cost
+                double cost = biomeItem.getPrice();
+                if (cost > 0D) {
+                    if (!VaultHelper.econ.has(player, Settings.worldName, cost)) {
+                        Util.sendMessage(player, ChatColor.RED + plugin.myLocale(player.getUniqueId()).minishopYouCannotAfford.replace("[description]", VaultHelper.econ.format(cost)));
+                        return;
+                    } else {
+                        VaultHelper.econ.withdrawPlayer(player, Settings.worldName, cost);
+                        Util.sendMessage(player, ChatColor.GREEN + plugin.myLocale(player.getUniqueId()).biomeYouBought.replace("[cost]", VaultHelper.econ.format(cost)));
                     }
                 }
             }
-            inventory.clear();
-            player.closeInventory(); // Closes the inventory
-            // Actually set the biome
-            Util.sendMessage(player, ChatColor.GREEN + plugin.myLocale(player.getUniqueId()).biomePleaseWait);
-            new SetBiome(plugin, island, biome, player);
         }
-        return;
+        inventory.clear();
+        player.closeInventory(); // Closes the inventory
+        // Actually set the biome
+        Util.sendMessage(player, ChatColor.GREEN + plugin.myLocale(player.getUniqueId()).biomePleaseWait);
+        new SetBiome(plugin, island, biome, player);
     }
 
     private static class Gui implements InventoryHolder {
 
         private final Inventory inventory;
+        private final Map<Integer, BiomeItem> items = new HashMap<>();
 
         public Gui(int size, String title) {
             this.inventory = Bukkit.createInventory(this, size, title);
@@ -216,6 +211,16 @@ public class BiomesPanel implements Listener {
         @Override
         public Inventory getInventory() {
             return inventory;
+        }
+
+        @Nullable
+        public BiomeItem getItem(int slot) {
+            return items.get(slot);
+        }
+
+        public void setItem(int slot, BiomeItem item) {
+            items.put(slot, item);
+            inventory.setItem(slot, item.getItem());
         }
     }
 }
