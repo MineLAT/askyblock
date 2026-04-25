@@ -193,11 +193,11 @@ public class SettingsPanel implements Listener {
             newPanel = new Gui(54, plugin.myLocale(uuid).igsTitle).getInventory();
             // Fill the inventory and return
             for (IPItem i : ip) {
-                if (i.getSlot() >= PanelHolder.INNER_SLOTS.length) {
+                if (i.getSlot() >= PanelHolder.INFO_AND_FILL.length) {
                     plugin.getLogger().warning("Too many settings to display! Some will be missing from the GUI.");
                     break;
                 }
-                newPanel.setItem(PanelHolder.INNER_SLOTS[i.getSlot()], i.getItem());
+                newPanel.setItem(PanelHolder.INFO_AND_FILL[i.getSlot()], i.getItem());
             }
         }	    
         return newPanel;
