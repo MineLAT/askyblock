@@ -19,6 +19,7 @@ package com.wasteofplastic.askyblock;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -86,20 +87,20 @@ public class Settings {
     /**
      * Default world protection settings
      */
-    public static final Map<SettingsFlag, Boolean> defaultWorldSettings = new HashMap<>();
+    public static final Map<SettingsFlag, Boolean> defaultWorldSettings = new LinkedHashMap<>();
 
     /**
      * Default island protection settings
      */
-    public static final Map<SettingsFlag, Boolean> defaultIslandSettings = new HashMap<>();
+    public static final Map<SettingsFlag, Boolean> defaultIslandSettings = new LinkedHashMap<>();
     /**
      * Default spawn protection settings
      */
-    public static final Map<SettingsFlag, Boolean> defaultSpawnSettings = new HashMap<>();
+    public static final Map<SettingsFlag, Boolean> defaultSpawnSettings = new LinkedHashMap<>();
     /**
      * Visitors settings to show in the GUI
      */
-    public static final Map<SettingsFlag, Boolean> visitorSettings = new HashMap<>();
+    public static final Map<SettingsFlag, Boolean> visitorSettings = new LinkedHashMap<>();
     // Flymode
     public static int flyTimeOutside;
 
